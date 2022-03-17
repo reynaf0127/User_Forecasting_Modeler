@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1612911646924.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3641389807",
+    "id" : "C9B75A36",
+    "lastKnownWriteTime" : 1605231512,
+    "last_content_update" : 1605231512,
+    "path" : "~/Reyna/KingsIsle/User Forecasting Modeler/model.R",
+    "project_path" : "model.R",
+    "properties" : {
+        "cursorPosition" : "93,53",
+        "scrollLine" : "0",
+        "tempName" : "Untitled3"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

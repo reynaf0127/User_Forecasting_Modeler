@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1608143804782.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2827508288",
+    "id" : "CD83741",
+    "lastKnownWriteTime" : 1609772136,
+    "last_content_update" : 1609772136500,
+    "path" : "~/Reyna/KingsIsle/User Forecasting Modeler/refresh.R",
+    "project_path" : "refresh.R",
+    "properties" : {
+        "cursorPosition" : "114,52",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

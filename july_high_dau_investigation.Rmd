@@ -1,0 +1,153 @@
+---
+title: "July High DAU Invesitgation"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+This report analyze the reason of July high DAU by looking new/current/returning users and their retention rate and review our current social decaying model to see if we missed anything in the model or this is an accidental event.
+
+Methodology:
+Group A: 1/1/2020-3/8/2020 (Before Covid19)
+Group B: 3/9/2020-6/13/2020 (Initial Social Distancing Data)
+Group C: 7/1/2020-7/18/2020 (July Data)
+
+The final report can be found [here](https://confluenator.kingsisle.com:8443/display/WIZ/Investigation+of+July+2020+High+User+Volume).
+
+DAU Plot
+```{r}
+#Packages
+library(dplyr)
+library(ggplot2)
+library(sqldf)
+data<-read.csv('./July High DAU Investigation Data.csv')
+data$date<-as.Date(data$date,"%m/%d/%Y")
+#Update model version date
+first_model_date<-as.Date("2020-06-13")
+second_model_date<-as.Date("2020-07-18")
+#This is exactly data in the latest version
+all_model_data<-data%>%
+  mutate(actual=ifelse(date>=as.Date("2020-01-01")&date<=second_model_date,actual,NA),
+         current=ifelse(date>=as.Date("2020-01-01")&date<=second_model_date,current,NA),
+         new=ifelse(date>=as.Date("2020-01-01")&date<=second_model_date,new,NA),
+         returning=ifelse(date>=as.Date("2020-01-01")&date<=second_model_date,returning,NA)
+)
+ggplot(all_model_data,aes(x=date))+
+  geom_line(aes(y=actual),color='darkred')+
+  geom_line(aes(y=social_distancing),color='steelblue')+
+  ggtitle("Acutual DAU", subtitle=paste("From 1/1/2020 to ",second_model_date,sep=''))+
+  xlab("Date")+ylab("DAU")+ylim(0,75000)+
+  theme_light()
+```
+
+There is an increase starting from early July
+
+```{r}
+group_a<-all_model_data%>%
+  filter(date<='2020-03-08')%>%
+  arrange(date)
+group_b<-all_model_data%>%
+  filter(date>='2020-03-09',date<=first_model_date)%>%
+  arrange(date)
+group_c<-all_model_data%>%
+  filter(date>='2020-07-01',date<=second_model_date)%>%
+  arrange(date)
+```
+User Retention Rate T Test: Group B vs Group C
+When P value is lower than 0.05, two groups retentions are significantly different
+```{r}
+t.test(group_b$current_r,group_c$current_r)
+t.test(group_b$new_r,group_c$new_r)
+t.test(group_b$returning_r,group_c$returning_r)
+```
+Current users and new users retention rate in July is significantly higher than March to June
+Retention Plot
+```{r}
+#Plot Retention
+ggplot(data=all_model_data%>%filter(!is.na(actual)))+
+  geom_line(aes(x=date,y=current_r),color='sky blue',size=1)+
+  geom_line(aes(x=date,y=new_r),color='orange',size=1)+
+  geom_line(aes(x=date,y=returning_r),color='yellow',size=1)+
+  ggtitle("Acutal Retention Rate") + xlab("Date") + ylab("Retention Rate")+
+  geom_text(aes(x=as.Date('2020-06-10'), y = 0.9, label = "Current Retention"))+
+  geom_text(aes(x=as.Date('2020-06-10'), y = 0.6, label = "Returning Retention"))+
+  geom_text(aes(x=as.Date('2020-06-10'), y = 0.4, label = "New Retention"))+
+  ylim(0,1)+
+  theme_light()
+```
+```{r}
+first_model_data<-data%>%
+  mutate(actual=ifelse(date>=as.Date("2020-01-01")&date<=first_model_date,actual,NA),
+         current=ifelse(date>=as.Date("2020-01-01")&date<=first_model_date,current,NA),
+         new=ifelse(date>=as.Date("2020-01-01")&date<=first_model_date,new,NA),
+         returning=ifelse(date>=as.Date("2020-01-01")&date<=first_model_date,returning,NA))%>%
+  arrange(date)
+first_model_na<-first_model_data%>%filter(!is.na(actual))
+cr<-mean(first_model_na$current_r)
+nr<-mean(first_model_na$new_r)
+rr<-mean(first_model_na$returning_r)
+cr_july<-mean(group_c$current_r)
+nr_july<-mean(group_c$new_r)
+rr_july<-mean(group_c$returning_r)
+```
+```{r}
+result_1<-first_model_data %>%
+  mutate(current_new_1=ifelse(date<=first_model_date,current,lag(current)*cr+lag(new)*nr+lag(returning)*rr),
+         new_new_1=ifelse(date<=first_model_date,new,lag(new)-10),
+         return_new_1=ifelse(date<=first_model_date,returning,lag(returning)-12)
+        )
+start_row<-nrow(first_model_data%>%filter(!is.na(actual)))+2
+end_row<-nrow(first_model_data)
+for (i in start_row:end_row){
+  result_1[i,15]=result_1[i-1,15]-10
+  result_1[i,16]=result_1[i-1,16]-12
+  result_2<-result_1
+}
+result_3<-result_2%>%
+  mutate(new_new_1=ifelse(new_new_1>=new_linear,new_new_1,new_linear),
+         return_new_1=ifelse(return_new_1>=return_log,return_new_1,return_log),
+         current_new_2=current_new_1)
+for (i in start_row:end_row){
+  result_3[i,14]=result_3[i-1,14]*cr+result_3[i-1,15]*nr+result_3[i-1,16]*rr
+  result_3[i,17]=result_3[i-1,17]*cr_july+result_3[i-1,15]*nr_july+result_3[i-1,16]*rr_july
+  result_4<-result_3
+}
+#Current_new_1 is based on Covid19 first model high retention rate and Current_new_2 is based on July high retention rate
+```
+```{r}
+result_5<-result_4%>%
+  mutate(actual_dau=current+new+returning,
+         december_model_dau=current_log+new_linear+return_log,
+         june_model_dau=current_new_1+new_new_1+return_new_1,
+         july_model_dau=current_new_2+new_new_1+return_new_1)%>%
+  arrange(date)%>%
+  select(actual_dau,december_model_dau,june_model_dau,july_model_dau)
+final_result<-cbind(data,result_5)
+ggplot(final_result,aes(x=date))+
+  geom_line(aes(y=actual),color='darkred')+
+  geom_line(aes(y=december_model_dau),color='steelblue')+
+  geom_line(aes(y=june_model_dau),color='yellow')+
+  geom_line(aes(y=july_model_dau),color='green')+
+  ggtitle("DAU Models", subtitle="From 1/1/2020 to ")+
+  xlab("Date")+ylab("DAU")+ylim(0,75000)+
+  theme_light()
+write.csv(final_result,'./final_result_1.csv')
+```
+In July, current users and new users retention rate went up to push DAU up then DAU follows this high retention decaying line till the end of August.
+```{r}
+covid<-read.csv('./covid.csv')
+covid$date<-as.Date(covid$date,"%m/%d/%Y")
+data_covid<-sqldf(
+  '
+  select data.date,data.current_r,data.new_r,daily_case
+  from data
+  left join covid on data.date=covid.date
+  '
+  )
+cor.test(data_covid$daily_case,data_covid$current_r)
+cor.test(data_covid$daily_case,data_covid$new_r)
+```
+There is a small correlation (>0.2) between current users/new users retention rate and daily Covid 19 cases

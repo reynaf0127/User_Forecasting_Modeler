@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1608143823006.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2100166768",
+    "id" : "C695E2DB",
+    "lastKnownWriteTime" : 1608145146,
+    "last_content_update" : 1608145146751,
+    "path" : "~/Reyna/KingsIsle/User Forecasting Modeler/overwrite_db.R",
+    "project_path" : "overwrite_db.R",
+    "properties" : {
+        "cursorPosition" : "13,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
